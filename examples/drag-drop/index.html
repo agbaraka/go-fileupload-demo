@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Drag and Drop Uploading</title>
+    <style>
+        body{
+            font-family: "Arial, Helvetica, sans-serif"
+        }
+        .dropzone{
+            width: 300px;
+            height: 300px;
+            border: 2px dashed #ccc;
+            color: #ccc;
+            line-height: 300px;
+            text-align: center;
+        }
+        .dropzone.dragover{
+            border-color: #000;
+            color: #000
+        }
+        .progress-container{
+            border: 1px solid #eee;
+            width: 300px;
+            height: 10px;
+            margin-top: 10px;
+        }
+        
+        .progress-container #progressBar{
+            height: 100%;
+            width: 0%;
+            background-color: green;
+        }
+    </style>
+</head>
+<body>
+    <div id="uploads"></div>
+    <div class="dropzone" id="dropzone">Drop files here to upload</div>
+    <div class="progress-container">
+        <div id="progressBar"></div>
+    </div>
+    <script type="text/javascript">
+        (function(){
+            
+            var dropzone = document.getElementById('dropzone');
+            var progressBar = document.getElementById('progressBar');
+            
+            var displayUploads = function(data){
+                var uploads = document.getElementById('uploads'),
+                        anchor,
+                        x;
+                for (x = 0; x < data.length; x++){
+                    anchor = document.createElement('div');
+                    anchor.innerText = data[x];
+                    
+                    uploads.appendChild(anchor)
+                    
+                }
+                
+               progressBar.style.width = 0;
+            }
+            
+            var upload = function(files){
+                var formData = new FormData(),
+                    xhr = new XMLHttpRequest(),
+                    x;
+                    
+                for (x = 0; x < files.length; x++){
+                    formData.append('file[]', files[x]);
+                }
+                
+                
+                
+                xhr.onload = function(){
+                    var data = JSON.parse(this.responseText);
+                    
+                    displayUploads(data);
+                }
+                
+                
+                
+                xhr.upload.addEventListener("progress", function(e){
+                    var progress = parseInt(e.loaded / e.total * 100)
+                    progressBar.style.width = progress + "%";
+                });
+                
+                xhr.open('post', '/upload');
+                xhr.send(formData);
+               
+            }
+            
+            dropzone.ondrop = function(e){
+                e.preventDefault()
+                
+                this.className = 'dropzone';
+                
+                upload(e.dataTransfer.files);
+                //upload();
+            };
+            
+            
+            dropzone.ondragover = function(){
+                this.className = 'dropzone dragover';
+                return false;
+            }
+            
+            dropzone.ondragleave = function(){
+                this.className = 'dropzone';
+                return false;
+            }
+            
+        }());
+    </script>
+</body>
+</html>
